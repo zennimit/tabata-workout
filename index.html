@@ -174,8 +174,11 @@ body{display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
 .paused-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
   background:rgba(10,10,10,.8);z-index:50}
 .paused-overlay.active{display:flex}
+.paused-overlay{cursor:pointer;flex-direction:column;gap:20px}
 .paused-text{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:8px;color:var(--text-dim);
   animation:paused-pulse 1.5s ease-in-out infinite}
+.tap-resume{font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;letter-spacing:3px;
+  color:var(--accent);text-transform:uppercase;animation:paused-pulse 1.5s ease-in-out infinite}
 @keyframes paused-pulse{0%,100%{opacity:.4}50%{opacity:1}}
 
 @media(min-width:430px){
@@ -267,9 +270,10 @@ body{display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
   <div class="countdown-label">Starting soon</div>
 </div>
 
-<!-- Paused overlay -->
-<div class="paused-overlay" id="pausedOverlay">
+<!-- Paused overlay (tap anywhere to resume) -->
+<div class="paused-overlay" id="pausedOverlay" onclick="togglePause()">
   <div class="paused-text">PAUSED</div>
+  <div class="tap-resume">TAP ANYWHERE TO RESUME</div>
 </div>
 
 <script>
