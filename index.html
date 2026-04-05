@@ -113,12 +113,10 @@ body{display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
 .next-exercise strong{color:var(--text-dim);font-weight:600}
 
 /* Exercise animation demo */
-.exercise-demo{width:120px;height:120px;margin:0 auto 4px;position:relative;opacity:0;transition:opacity .4s}
+.exercise-demo{width:140px;height:140px;margin:0 auto 4px;position:relative;opacity:0;transition:opacity .4s;
+  border-radius:14px;overflow:hidden;border:2px solid rgba(255,255,255,.08)}
 .exercise-demo.visible{opacity:1}
-.exercise-demo svg{width:100%;height:100%}
-.exercise-demo .figure-line{stroke:var(--work);stroke-width:3;stroke-linecap:round;fill:none}
-.exercise-demo .figure-head{fill:none;stroke:var(--work);stroke-width:3}
-.exercise-demo .figure-weight{fill:var(--accent);opacity:.7;stroke:none}
+.exercise-demo img{width:100%;height:100%;object-fit:cover;display:block}
 .phase-rest .exercise-demo{opacity:0!important}
 
 .timer-bottom{width:100%;display:flex;flex-direction:column;gap:16px;align-items:center}
@@ -577,203 +575,12 @@ function resetWorkout() {
   haptic(50);
 }
 
-// ── EXERCISE ANIMATIONS (animated stick figures) ──
+// ── EXERCISE DEMO (video GIF clips) ──
 const exerciseDemo = $timer('exerciseDemo');
-
-const EXERCISE_SVGS = [
-  // 0: Thruster Complex (squat down → press up)
-  `<svg viewBox="0 0 120 120">
-    <circle class="figure-head" cx="60" cy="18" r="8">
-      <animate attributeName="cy" values="18;38;18" dur="1.6s" repeatCount="indefinite"/>
-    </circle>
-    <line class="figure-line" x1="60" y1="26" x2="60" y2="60">
-      <animate attributeName="y1" values="26;46;26" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="y2" values="60;65;60" dur="1.6s" repeatCount="indefinite"/>
-    </line>
-    <!-- arms -->
-    <line class="figure-line" x1="38" y1="35" x2="60" y2="40">
-      <animate attributeName="y1" values="35;55;8" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="x1" values="38;42;38" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="y2" values="40;55;26" dur="1.6s" repeatCount="indefinite"/>
-    </line>
-    <line class="figure-line" x1="82" y1="35" x2="60" y2="40">
-      <animate attributeName="y1" values="35;55;8" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="x1" values="82;78;82" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="y2" values="40;55;26" dur="1.6s" repeatCount="indefinite"/>
-    </line>
-    <!-- left leg -->
-    <line class="figure-line" x1="45" y1="90" x2="60" y2="60">
-      <animate attributeName="y1" values="90;85;90" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="x1" values="45;40;45" dur="1.6s" repeatCount="indefinite"/>
-    </line>
-    <!-- right leg -->
-    <line class="figure-line" x1="75" y1="90" x2="60" y2="60">
-      <animate attributeName="y1" values="90;85;90" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="x1" values="75;80;75" dur="1.6s" repeatCount="indefinite"/>
-    </line>
-    <!-- dumbbells -->
-    <rect class="figure-weight" x="30" y="30" width="12" height="5" rx="2">
-      <animate attributeName="y" values="30;50;3" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="x" values="30;34;30" dur="1.6s" repeatCount="indefinite"/>
-    </rect>
-    <rect class="figure-weight" x="78" y="30" width="12" height="5" rx="2">
-      <animate attributeName="y" values="30;50;3" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="x" values="78;74;78" dur="1.6s" repeatCount="indefinite"/>
-    </rect>
-  </svg>`,
-
-  // 1: Thruster Rotation Press (press + twist)
-  `<svg viewBox="0 0 120 120">
-    <circle class="figure-head" cx="60" cy="20" r="8">
-      <animate attributeName="cx" values="60;55;60;65;60" dur="2s" repeatCount="indefinite"/>
-    </circle>
-    <line class="figure-line" x1="60" y1="28" x2="60" y2="62">
-      <animate attributeName="x1" values="60;55;60;65;60" dur="2s" repeatCount="indefinite"/>
-    </line>
-    <!-- left arm pressing + rotating -->
-    <line class="figure-line" x1="38" y1="10" x2="60" y2="42">
-      <animate attributeName="x1" values="38;30;38;45;38" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="y1" values="10;42;10;42;10" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="x2" values="60;55;60;65;60" dur="2s" repeatCount="indefinite"/>
-    </line>
-    <!-- right arm -->
-    <line class="figure-line" x1="82" y1="10" x2="60" y2="42">
-      <animate attributeName="x1" values="82;75;82;90;82" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="y1" values="10;42;10;42;10" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="x2" values="60;55;60;65;60" dur="2s" repeatCount="indefinite"/>
-    </line>
-    <!-- legs stable -->
-    <line class="figure-line" x1="45" y1="92" x2="60" y2="62"/>
-    <line class="figure-line" x1="75" y1="92" x2="60" y2="62"/>
-    <!-- dumbbells -->
-    <rect class="figure-weight" x="30" y="6" width="12" height="5" rx="2">
-      <animate attributeName="x" values="30;22;30;37;30" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="y" values="6;38;6;38;6" dur="2s" repeatCount="indefinite"/>
-    </rect>
-    <rect class="figure-weight" x="78" y="6" width="12" height="5" rx="2">
-      <animate attributeName="x" values="78;70;78;85;78" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="y" values="6;38;6;38;6" dur="2s" repeatCount="indefinite"/>
-    </rect>
-  </svg>`,
-
-  // 2: Offset Overhead Lunge (lunge with one arm up)
-  `<svg viewBox="0 0 120 120">
-    <circle class="figure-head" cx="60" cy="16" r="8">
-      <animate attributeName="cy" values="16;28;16" dur="1.8s" repeatCount="indefinite"/>
-    </circle>
-    <!-- torso -->
-    <line class="figure-line" x1="60" y1="24" x2="60" y2="58">
-      <animate attributeName="y1" values="24;36;24" dur="1.8s" repeatCount="indefinite"/>
-    </line>
-    <!-- left arm up (holding weight overhead) -->
-    <line class="figure-line" x1="48" y1="6" x2="60" y2="38">
-      <animate attributeName="y2" values="38;48;38" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="y1" values="6;18;6" dur="1.8s" repeatCount="indefinite"/>
-    </line>
-    <!-- right arm down -->
-    <line class="figure-line" x1="78" y1="52" x2="60" y2="38">
-      <animate attributeName="y2" values="38;48;38" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="y1" values="52;60;52" dur="1.8s" repeatCount="indefinite"/>
-    </line>
-    <!-- front leg (lunging) -->
-    <line class="figure-line" x1="42" y1="92" x2="52" y2="72">
-      <animate attributeName="x2" values="52;48;52" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="y2" values="72;68;72" dur="1.8s" repeatCount="indefinite"/>
-    </line>
-    <line class="figure-line" x1="52" y1="72" x2="60" y2="58">
-      <animate attributeName="x1" values="52;48;52" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="y1" values="72;68;72" dur="1.8s" repeatCount="indefinite"/>
-    </line>
-    <!-- back leg -->
-    <line class="figure-line" x1="82" y1="92" x2="70" y2="72">
-      <animate attributeName="y2" values="72;80;72" dur="1.8s" repeatCount="indefinite"/>
-    </line>
-    <line class="figure-line" x1="70" y1="72" x2="60" y2="58">
-      <animate attributeName="y1" values="72;80;72" dur="1.8s" repeatCount="indefinite"/>
-    </line>
-    <!-- overhead dumbbell -->
-    <rect class="figure-weight" x="40" y="2" width="14" height="5" rx="2">
-      <animate attributeName="y" values="2;14;2" dur="1.8s" repeatCount="indefinite"/>
-    </rect>
-    <!-- side dumbbell -->
-    <rect class="figure-weight" x="74" y="48" width="10" height="5" rx="2">
-      <animate attributeName="y" values="48;56;48" dur="1.8s" repeatCount="indefinite"/>
-    </rect>
-  </svg>`,
-
-  // 3: DB Curls
-  `<svg viewBox="0 0 120 120">
-    <circle class="figure-head" cx="60" cy="18" r="8"/>
-    <line class="figure-line" x1="60" y1="26" x2="60" y2="62"/>
-    <!-- left upper arm -->
-    <line class="figure-line" x1="48" y1="42" x2="60" y2="38"/>
-    <!-- left forearm curling -->
-    <line class="figure-line" x1="38" y1="50" x2="48" y2="42">
-      <animate attributeName="x1" values="38;42;38" dur="1.4s" repeatCount="indefinite"/>
-      <animate attributeName="y1" values="50;30;50" dur="1.4s" repeatCount="indefinite"/>
-    </line>
-    <!-- right upper arm -->
-    <line class="figure-line" x1="72" y1="42" x2="60" y2="38"/>
-    <!-- right forearm curling -->
-    <line class="figure-line" x1="82" y1="50" x2="72" y2="42">
-      <animate attributeName="x1" values="82;78;82" dur="1.4s" repeatCount="indefinite"/>
-      <animate attributeName="y1" values="50;30;50" dur="1.4s" repeatCount="indefinite"/>
-    </line>
-    <!-- legs -->
-    <line class="figure-line" x1="48" y1="92" x2="60" y2="62"/>
-    <line class="figure-line" x1="72" y1="92" x2="60" y2="62"/>
-    <!-- left dumbbell -->
-    <rect class="figure-weight" x="30" y="46" width="12" height="5" rx="2">
-      <animate attributeName="x" values="30;34;30" dur="1.4s" repeatCount="indefinite"/>
-      <animate attributeName="y" values="46;26;46" dur="1.4s" repeatCount="indefinite"/>
-    </rect>
-    <!-- right dumbbell -->
-    <rect class="figure-weight" x="78" y="46" width="12" height="5" rx="2">
-      <animate attributeName="x" values="78;74;78" dur="1.4s" repeatCount="indefinite"/>
-      <animate attributeName="y" values="46;26;46" dur="1.4s" repeatCount="indefinite"/>
-    </rect>
-  </svg>`,
-
-  // 4: Pike Push-ups
-  `<svg viewBox="0 0 120 120">
-    <circle class="figure-head" cx="38" cy="42" r="8">
-      <animate attributeName="cy" values="42;56;42" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="cx" values="38;42;38" dur="1.6s" repeatCount="indefinite"/>
-    </circle>
-    <!-- torso (angled - pike position) -->
-    <line class="figure-line" x1="42" y1="48" x2="65" y2="38">
-      <animate attributeName="y1" values="48;60;48" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="x1" values="42;46;42" dur="1.6s" repeatCount="indefinite"/>
-    </line>
-    <!-- left arm (pushing) -->
-    <line class="figure-line" x1="30" y1="80" x2="40" y2="52">
-      <animate attributeName="x2" values="40;44;40" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="y2" values="52;64;52" dur="1.6s" repeatCount="indefinite"/>
-    </line>
-    <!-- right arm -->
-    <line class="figure-line" x1="48" y1="80" x2="44" y2="52">
-      <animate attributeName="x2" values="44;48;44" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="y2" values="52;64;52" dur="1.6s" repeatCount="indefinite"/>
-    </line>
-    <!-- hips up (pike) -->
-    <line class="figure-line" x1="65" y1="38" x2="72" y2="30">
-      <animate attributeName="y2" values="30;34;30" dur="1.6s" repeatCount="indefinite"/>
-    </line>
-    <!-- left leg -->
-    <line class="figure-line" x1="80" y1="80" x2="72" y2="30">
-      <animate attributeName="y2" values="30;34;30" dur="1.6s" repeatCount="indefinite"/>
-    </line>
-    <!-- right leg -->
-    <line class="figure-line" x1="90" y1="80" x2="72" y2="30">
-      <animate attributeName="y2" values="30;34;30" dur="1.6s" repeatCount="indefinite"/>
-    </line>
-    <!-- ground line -->
-    <line class="figure-line" x1="20" y1="82" x2="100" y2="82" style="stroke:var(--text-muted);stroke-width:1;stroke-dasharray:4,4"/>
-  </svg>`
-];
+const EXERCISE_GIFS = ['ex1.gif','ex2.gif','ex3.gif','ex4.gif','ex5.gif'];
 
 function showExerciseDemo(idx) {
-  exerciseDemo.innerHTML = EXERCISE_SVGS[idx] || '';
+  exerciseDemo.innerHTML = `<img src="${EXERCISE_GIFS[idx]}" alt="${EXERCISES[idx].name}">`;
   exerciseDemo.classList.add('visible');
 }
 
