@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>TABATA BURN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0a;--surface:#141414;--surface2:#1a1a1a;
+  --text:#f0ece6;--text-dim:#6b6560;--text-muted:#3a3530;
+  --work:#c8f542;--work-glow:#c8f54233;--work-deep:#4a5c0f;
+  --rest:#ff4d2a;--rest-glow:#ff4d2a33;--rest-deep:#5c1a0f;
+  --accent:#ff8c21;--accent-glow:#ff8c2133;
+  --radius:16px;--radius-sm:10px;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif}
+body{display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
+  background:var(--bg) url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Screens */
+.screen{display:none;flex-direction:column;height:100%;width:100%;position:absolute;top:0;left:0}
+.screen.active{display:flex}
+
+/* ── INTRO SCREEN ── */
+.intro{padding:env(safe-area-inset-top,20px) 24px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.intro-header{text-align:center;padding:40px 0 32px;position:relative}
+.intro-header::before{content:'';position:absolute;top:20px;left:50%;transform:translateX(-50%);width:200px;height:200px;
+  background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);pointer-events:none;filter:blur(40px)}
+.brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:6px;
+  background:linear-gradient(135deg,var(--accent),#ff4d2a,var(--work));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.brand-sub{font-size:11px;letter-spacing:8px;text-transform:uppercase;color:var(--text-dim);margin-top:4px;font-weight:600}
+.workout-meta{display:flex;justify-content:center;gap:20px;margin:28px 0 36px}
+.meta-pill{background:var(--surface2);border:1px solid #ffffff08;border-radius:40px;padding:10px 18px;
+  font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);
+  display:flex;align-items:center;gap:6px}
+.meta-pill span{color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:14px}
+
+.exercise-list{display:flex;flex-direction:column;gap:8px;margin-bottom:100px}
+.exercise-card{background:var(--surface);border:1px solid #ffffff06;border-radius:var(--radius);
+  padding:18px 20px;display:flex;align-items:center;gap:16px;
+  transition:transform .2s,border-color .3s;position:relative;overflow:hidden}
+.exercise-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--accent),var(--rest));opacity:.5;border-radius:0 2px 2px 0}
+.exercise-card:active{transform:scale(.98)}
+.ex-num{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--text-muted);line-height:1;min-width:30px}
+.ex-info{flex:1}
+.ex-name{font-weight:700;font-size:15px;letter-spacing:.3px}
+.ex-detail{font-size:12px;color:var(--text-dim);margin-top:2px}
+
+.start-area{position:fixed;bottom:0;left:0;right:0;padding:16px 24px calc(env(safe-area-inset-bottom,16px) + 16px);
+  background:linear-gradient(0deg,var(--bg) 60%,transparent)}
+.btn-start{width:100%;padding:20px;border:none;border-radius:var(--radius);cursor:pointer;
+  font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#0a0a0a;
+  background:linear-gradient(135deg,var(--work),#e8ff6b);
+  box-shadow:0 0 40px var(--work-glow),0 4px 20px rgba(0,0,0,.4);
+  transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+.btn-start::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
+  transform:translateX(-100%);animation:shimmer 3s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.btn-start:active{transform:scale(.96);box-shadow:0 0 20px var(--work-glow)}
+
+/* ── TIMER SCREEN ── */
+.timer-screen{align-items:center;justify-content:space-between;
+  padding:env(safe-area-inset-top,20px) 24px calc(env(safe-area-inset-bottom,16px) + 16px);
+  transition:background .6s}
+.timer-screen.phase-work{background:radial-gradient(ellipse at 50% 30%,var(--work-deep) 0%,var(--bg) 70%)}
+.timer-screen.phase-rest{background:radial-gradient(ellipse at 50% 30%,var(--rest-deep) 0%,var(--bg) 70%)}
+.timer-screen.phase-prep{background:radial-gradient(ellipse at 50% 30%,#1a2a0a 0%,var(--bg) 70%)}
+
+.timer-top{text-align:center;width:100%;padding-top:12px}
+.round-label{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:6px;color:var(--text-dim)}
+.round-num{color:var(--accent);font-size:22px}
+
+.phase-badge{display:inline-block;padding:6px 20px;border-radius:40px;font-size:11px;font-weight:700;
+  letter-spacing:4px;text-transform:uppercase;margin-top:8px;transition:all .3s}
+.phase-badge.work{background:var(--work);color:#0a0a0a}
+.phase-badge.rest{background:var(--rest);color:#fff}
+.phase-badge.prep{background:var(--text-dim);color:var(--bg)}
+
+.timer-center{text-align:center;position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+.timer-ring-wrap{position:relative;width:220px;height:220px;margin:0 auto}
+.timer-ring{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--surface2);stroke-width:6}
+.ring-progress{fill:none;stroke-width:6;stroke-linecap:round;
+  transition:stroke .4s,stroke-dashoffset .15s linear;filter:url(#glow)}
+.ring-progress.work{stroke:var(--work)}
+.ring-progress.rest{stroke:var(--rest)}
+.ring-progress.prep{stroke:var(--accent)}
+
+.timer-digits{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:80px;font-weight:700;letter-spacing:-2px;
+  transition:color .4s}
+.timer-digits.work{color:var(--work)}
+.timer-digits.rest{color:var(--rest)}
+.timer-digits.prep{color:var(--accent)}
+.timer-digits.pulse{animation:digit-pulse .3s ease-out}
+@keyframes digit-pulse{0%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+.exercise-display{margin-top:12px;text-align:center}
+.current-exercise{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;line-height:1.2;
+  min-height:36px;transition:opacity .2s}
+.next-exercise{font-size:12px;color:var(--text-dim);margin-top:8px;font-weight:300;letter-spacing:1px;min-height:18px}
+.next-exercise strong{color:var(--text-dim);font-weight:600}
+
+/* Exercise animation demo */
+.exercise-demo{width:120px;height:120px;margin:0 auto 4px;position:relative;opacity:0;transition:opacity .4s}
+.exercise-demo.visible{opacity:1}
+.exercise-demo svg{width:100%;height:100%}
+.exercise-demo .figure-line{stroke:var(--work);stroke-width:3;stroke-linecap:round;fill:none}
+.exercise-demo .figure-head{fill:none;stroke:var(--work);stroke-width:3}
+.exercise-demo .figure-weight{fill:var(--accent);opacity:.7;stroke:none}
+.phase-rest .exercise-demo{opacity:0!important}
+
+.timer-bottom{width:100%;display:flex;flex-direction:column;gap:16px;align-items:center}
+
+.progress-track{width:100%;height:4px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;transition:width .3s,background .4s;
+  background:linear-gradient(90deg,var(--accent),var(--work))}
+
+.total-time{font-size:11px;color:var(--text-muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace}
+
+.controls{display:flex;gap:12px;width:100%}
+.btn-ctrl{flex:1;padding:16px;border:none;border-radius:var(--radius-sm);cursor:pointer;
+  font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  transition:transform .1s,opacity .2s}
+.btn-ctrl:active{transform:scale(.95)}
+.btn-pause{background:var(--surface2);color:var(--text);border:1px solid #ffffff10}
+.btn-reset{background:transparent;color:var(--text-dim);border:1px solid #ffffff08}
+
+/* ── DONE SCREEN ── */
+.done-screen{align-items:center;justify-content:center;gap:24px;
+  background:radial-gradient(ellipse at 50% 40%,#2a1a05 0%,var(--bg) 70%)}
+.done-icon{font-size:64px;animation:bounce-in .6s cubic-bezier(.17,.67,.35,1.4)}
+@keyframes bounce-in{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+.done-title{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;
+  background:linear-gradient(135deg,var(--accent),var(--work));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.done-stats{display:flex;gap:32px}
+.done-stat{text-align:center}
+.done-stat-val{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--accent)}
+.done-stat-label{font-size:11px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.btn-again{margin-top:20px;padding:16px 48px;border:none;border-radius:var(--radius);cursor:pointer;
+  font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:#0a0a0a;
+  background:linear-gradient(135deg,var(--accent),var(--rest));
+  box-shadow:0 0 30px var(--accent-glow);transition:transform .15s}
+.btn-again:active{transform:scale(.96)}
+
+/* Transitions */
+.fade-in{animation:fadeIn .4s ease-out}
+@keyframes fadeIn{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
+.ex-swap{animation:exSwap .3s ease-out}
+@keyframes exSwap{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:translateY(0)}}
+
+/* Countdown overlay */
+.countdown-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(10,10,10,.92);z-index:100;flex-direction:column;gap:12px}
+.countdown-overlay.active{display:flex}
+.countdown-num{font-family:'Bebas Neue',sans-serif;font-size:160px;color:var(--work);
+  animation:count-pop .5s ease-out;line-height:1}
+@keyframes count-pop{0%{transform:scale(2);opacity:0}40%{transform:scale(.9);opacity:1}100%{transform:scale(1)}}
+.countdown-label{font-size:14px;letter-spacing:6px;text-transform:uppercase;color:var(--text-dim)}
+
+/* Paused overlay */
+.paused-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(10,10,10,.8);z-index:50}
+.paused-overlay.active{display:flex}
+.paused-text{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:8px;color:var(--text-dim);
+  animation:paused-pulse 1.5s ease-in-out infinite}
+@keyframes paused-pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+@media(min-width:430px){
+  body{max-width:430px;margin:0 auto;border-left:1px solid #ffffff06;border-right:1px solid #ffffff06}
+}
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div class="screen intro active" id="introScreen">
+  <div class="intro-header">
+    <div class="brand">TABATA BURN</div>
+    <div class="brand-sub">Full Body Dumbbell</div>
+  </div>
+  <div class="workout-meta">
+    <div class="meta-pill"><span>20s</span> work</div>
+    <div class="meta-pill"><span>10s</span> rest</div>
+    <div class="meta-pill"><span>5</span> rounds</div>
+  </div>
+  <div class="exercise-list" id="exerciseList"></div>
+  <div class="start-area">
+    <button class="btn-start" id="btnStart" onclick="beginWorkout()">START WORKOUT</button>
+  </div>
+</div>
+
+<!-- TIMER -->
+<div class="screen timer-screen phase-prep" id="timerScreen">
+  <div class="timer-top fade-in">
+    <div class="round-label">ROUND <span class="round-num" id="roundDisplay">1</span> / 5</div>
+    <div class="phase-badge prep" id="phaseBadge">GET READY</div>
+  </div>
+
+  <div class="timer-center">
+    <div class="timer-ring-wrap">
+      <svg class="timer-ring" viewBox="0 0 260 260">
+        <defs>
+          <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <circle class="ring-bg" cx="130" cy="130" r="120"/>
+        <circle class="ring-progress prep" id="ringProgress" cx="130" cy="130" r="120"
+          stroke-dasharray="754" stroke-dashoffset="0"/>
+      </svg>
+      <div class="timer-digits prep" id="timerDigits">10</div>
+    </div>
+    <div class="exercise-demo" id="exerciseDemo"></div>
+    <div class="exercise-display">
+      <div class="current-exercise" id="currentExercise">GET READY</div>
+      <div class="next-exercise" id="nextExercise"></div>
+    </div>
+  </div>
+
+  <div class="timer-bottom fade-in">
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="total-time" id="totalTime">00:00</div>
+    <div class="controls">
+      <button class="btn-ctrl btn-pause" id="btnPause" onclick="togglePause()">PAUSE</button>
+      <button class="btn-ctrl btn-reset" onclick="resetWorkout()">RESET</button>
+    </div>
+  </div>
+</div>
+
+<!-- DONE -->
+<div class="screen done-screen" id="doneScreen">
+  <div class="done-icon">&#128293;</div>
+  <div class="done-title">WORKOUT COMPLETE</div>
+  <div class="done-stats">
+    <div class="done-stat">
+      <div class="done-stat-val" id="doneTime">--:--</div>
+      <div class="done-stat-label">Total Time</div>
+    </div>
+    <div class="done-stat">
+      <div class="done-stat-val" id="doneRounds">5</div>
+      <div class="done-stat-label">Rounds</div>
+    </div>
+    <div class="done-stat">
+      <div class="done-stat-val" id="doneExercises">25</div>
+      <div class="done-stat-label">Sets</div>
+    </div>
+  </div>
+  <button class="btn-again" onclick="resetWorkout()">GO AGAIN</button>
+</div>
+
+<!-- Countdown overlay -->
+<div class="countdown-overlay" id="countdownOverlay">
+  <div class="countdown-num" id="countdownNum">3</div>
+  <div class="countdown-label">Starting soon</div>
+</div>
+
+<!-- Paused overlay -->
+<div class="paused-overlay" id="pausedOverlay">
+  <div class="paused-text">PAUSED</div>
+</div>
+
+<script>
+const EXERCISES = [
+  { name: 'Thruster Complex', detail: 'Squat + Press' },
+  { name: 'Thruster Rotation Press', detail: 'Twist + Press' },
+  { name: 'Offset OH Lunge', detail: '20 sec each arm' },
+  { name: 'DB Curls', detail: 'Controlled tempo' },
+  { name: 'Pike Push-ups', detail: 'Shoulder burner' }
+];
+const WORK_TIME = 20;
+const REST_TIME = 10;
+const TOTAL_ROUNDS = 5;
+const CIRCUMFERENCE = 2 * Math.PI * 120; // ~754
+
+let currentRound = 1;
+let currentExIdx = 0;
+let phase = 'idle'; // idle | prep | work | rest | done
+let timeLeft = 0;
+let totalElapsed = 0;
+let isPaused = false;
+let timerInterval = null;
+let audioCtx = null;
+
+// DOM
+const $timer = id => document.getElementById(id);
+const introScreen = $timer('introScreen');
+const timerScreen = $timer('timerScreen');
+const doneScreen = $timer('doneScreen');
+const roundDisplay = $timer('roundDisplay');
+const phaseBadge = $timer('phaseBadge');
+const ringProgress = $timer('ringProgress');
+const timerDigits = $timer('timerDigits');
+const currentExercise = $timer('currentExercise');
+const nextExercise = $timer('nextExercise');
+const progressFill = $timer('progressFill');
+const totalTime = $timer('totalTime');
+const btnPause = $timer('btnPause');
+const countdownOverlay = $timer('countdownOverlay');
+const countdownNum = $timer('countdownNum');
+const pausedOverlay = $timer('pausedOverlay');
+
+// Build exercise list
+(function buildList() {
+  const list = $timer('exerciseList');
+  EXERCISES.forEach((ex, i) => {
+    const card = document.createElement('div');
+    card.className = 'exercise-card';
+    card.innerHTML = `<div class="ex-num">${i + 1}</div><div class="ex-info"><div class="ex-name">${ex.name}</div><div class="ex-detail">${ex.detail}</div></div><div style="font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace">${WORK_TIME}s</div>`;
+    list.appendChild(card);
+  });
+})();
+
+// Audio
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playBeep(freq = 880, duration = 0.1, vol = 0.3) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.frequency.value = freq;
+  osc.type = 'square';
+  gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+function playWorkBeep() { playBeep(1200, 0.15, 0.4); }
+function playRestBeep() { playBeep(600, 0.2, 0.3); }
+function playTickBeep() { playBeep(1000, 0.06, 0.2); }
+function playDoneBeep() {
+  playBeep(800, 0.15, 0.4);
+  setTimeout(() => playBeep(1000, 0.15, 0.4), 150);
+  setTimeout(() => playBeep(1200, 0.3, 0.5), 300);
+}
+
+function haptic(ms = 50) {
+  if (navigator.vibrate) navigator.vibrate(ms);
+}
+
+// Total segments for progress
+const totalSegments = TOTAL_ROUNDS * EXERCISES.length; // 25
+let completedSegments = 0;
+
+function updateProgress() {
+  const pct = (completedSegments / totalSegments) * 100;
+  progressFill.style.width = pct + '%';
+}
+
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+}
+
+function setPhaseUI(p) {
+  timerScreen.className = 'screen timer-screen active phase-' + p;
+  ringProgress.className = 'ring-progress ' + p;
+  timerDigits.className = 'timer-digits ' + p;
+
+  if (p === 'work') {
+    phaseBadge.className = 'phase-badge work';
+    phaseBadge.textContent = 'WORK';
+  } else if (p === 'rest') {
+    phaseBadge.className = 'phase-badge rest';
+    phaseBadge.textContent = 'REST';
+  } else {
+    phaseBadge.className = 'phase-badge prep';
+    phaseBadge.textContent = 'GET READY';
+  }
+}
+
+function setRing(timeLeft, totalTime) {
+  const frac = timeLeft / totalTime;
+  const offset = CIRCUMFERENCE * (1 - frac);
+  ringProgress.style.strokeDashoffset = offset;
+}
+
+function showExercise() {
+  currentExercise.className = 'current-exercise ex-swap';
+  currentExercise.textContent = EXERCISES[currentExIdx].name;
+  const nextIdx = currentExIdx + 1;
+  if (nextIdx < EXERCISES.length) {
+    nextExercise.innerHTML = `Next: <strong>${EXERCISES[nextIdx].name}</strong>`;
+  } else if (currentRound < TOTAL_ROUNDS) {
+    nextExercise.innerHTML = `Next round: <strong>${EXERCISES[0].name}</strong>`;
+  } else {
+    nextExercise.textContent = 'Last exercise!';
+  }
+  setTimeout(() => currentExercise.className = 'current-exercise', 300);
+}
+
+function switchScreen(screen) {
+  [introScreen, timerScreen, doneScreen].forEach(s => s.classList.remove('active'));
+  screen.classList.add('active');
+}
+
+// ── COUNTDOWN ──
+function beginWorkout() {
+  initAudio();
+  haptic(100);
+  switchScreen(timerScreen);
+  currentRound = 1;
+  currentExIdx = 0;
+  completedSegments = 0;
+  totalElapsed = 0;
+  isPaused = false;
+  updateProgress();
+  totalTime.textContent = '00:00';
+
+  // 3-2-1 countdown
+  let count = 3;
+  countdownOverlay.classList.add('active');
+  countdownNum.textContent = count;
+  countdownNum.style.animation = 'none';
+  void countdownNum.offsetWidth;
+  countdownNum.style.animation = '';
+
+  setPhaseUI('prep');
+  roundDisplay.textContent = '1';
+  currentExercise.textContent = 'GET READY';
+  nextExercise.innerHTML = `First: <strong>${EXERCISES[0].name}</strong>`;
+  timerDigits.textContent = count;
+  setRing(count, 3);
+
+  const cdInterval = setInterval(() => {
+    count--;
+    if (count > 0) {
+      playTickBeep();
+      haptic(30);
+      countdownNum.textContent = count;
+      countdownNum.style.animation = 'none';
+      void countdownNum.offsetWidth;
+      countdownNum.style.animation = '';
+      timerDigits.textContent = count;
+      setRing(count, 3);
+    } else {
+      clearInterval(cdInterval);
+      countdownOverlay.classList.remove('active');
+      startWork();
+    }
+  }, 1000);
+}
+
+function startWork() {
+  phase = 'work';
+  timeLeft = WORK_TIME;
+  setPhaseUI('work');
+  showExercise();
+  showExerciseDemo(currentExIdx);
+  roundDisplay.textContent = currentRound;
+  timerDigits.textContent = timeLeft;
+  setRing(timeLeft, WORK_TIME);
+  playWorkBeep();
+  haptic(80);
+  startTimer(WORK_TIME);
+}
+
+function startRest() {
+  phase = 'rest';
+  timeLeft = REST_TIME;
+  setPhaseUI('rest');
+  hideExerciseDemo();
+  currentExercise.textContent = 'REST';
+  // show what's next
+  const nextIdx = currentExIdx + 1;
+  if (nextIdx < EXERCISES.length) {
+    nextExercise.innerHTML = `Next: <strong>${EXERCISES[nextIdx].name}</strong>`;
+  } else if (currentRound < TOTAL_ROUNDS) {
+    nextExercise.innerHTML = `Next round: <strong>${EXERCISES[0].name}</strong>`;
+  } else {
+    nextExercise.textContent = '';
+  }
+  timerDigits.textContent = timeLeft;
+  setRing(timeLeft, REST_TIME);
+  playRestBeep();
+  haptic(40);
+  startTimer(REST_TIME);
+}
+
+function startTimer(total) {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (isPaused) return;
+    totalElapsed++;
+    totalTime.textContent = formatTime(totalElapsed);
+    timeLeft--;
+
+    if (timeLeft <= 3 && timeLeft > 0) {
+      playTickBeep();
+      haptic(20);
+      timerDigits.classList.add('pulse');
+      setTimeout(() => timerDigits.classList.remove('pulse'), 200);
+    }
+
+    timerDigits.textContent = timeLeft;
+    setRing(timeLeft, total);
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      onPhaseEnd();
+    }
+  }, 1000);
+}
+
+function onPhaseEnd() {
+  if (phase === 'work') {
+    completedSegments++;
+    updateProgress();
+    // Check if more exercises or rounds
+    const isLastExercise = currentExIdx >= EXERCISES.length - 1;
+    const isLastRound = currentRound >= TOTAL_ROUNDS;
+
+    if (isLastExercise && isLastRound) {
+      finishWorkout();
+    } else {
+      startRest();
+    }
+  } else if (phase === 'rest') {
+    currentExIdx++;
+    if (currentExIdx >= EXERCISES.length) {
+      currentExIdx = 0;
+      currentRound++;
+    }
+    startWork();
+  }
+}
+
+function finishWorkout() {
+  phase = 'done';
+  clearInterval(timerInterval);
+  playDoneBeep();
+  haptic(200);
+  switchScreen(doneScreen);
+  $timer('doneTime').textContent = formatTime(totalElapsed);
+  $timer('doneRounds').textContent = TOTAL_ROUNDS;
+  $timer('doneExercises').textContent = totalSegments;
+}
+
+function togglePause() {
+  isPaused = !isPaused;
+  btnPause.textContent = isPaused ? 'RESUME' : 'PAUSE';
+  pausedOverlay.classList.toggle('active', isPaused);
+  haptic(30);
+}
+
+function resetWorkout() {
+  clearInterval(timerInterval);
+  phase = 'idle';
+  isPaused = false;
+  pausedOverlay.classList.remove('active');
+  countdownOverlay.classList.remove('active');
+  btnPause.textContent = 'PAUSE';
+  switchScreen(introScreen);
+  haptic(50);
+}
+
+// ── EXERCISE ANIMATIONS (animated stick figures) ──
+const exerciseDemo = $timer('exerciseDemo');
+
+const EXERCISE_SVGS = [
+  // 0: Thruster Complex (squat down → press up)
+  `<svg viewBox="0 0 120 120">
+    <circle class="figure-head" cx="60" cy="18" r="8">
+      <animate attributeName="cy" values="18;38;18" dur="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <line class="figure-line" x1="60" y1="26" x2="60" y2="60">
+      <animate attributeName="y1" values="26;46;26" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="60;65;60" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+    <!-- arms -->
+    <line class="figure-line" x1="38" y1="35" x2="60" y2="40">
+      <animate attributeName="y1" values="35;55;8" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="x1" values="38;42;38" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="40;55;26" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+    <line class="figure-line" x1="82" y1="35" x2="60" y2="40">
+      <animate attributeName="y1" values="35;55;8" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="x1" values="82;78;82" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="40;55;26" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+    <!-- left leg -->
+    <line class="figure-line" x1="45" y1="90" x2="60" y2="60">
+      <animate attributeName="y1" values="90;85;90" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="x1" values="45;40;45" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+    <!-- right leg -->
+    <line class="figure-line" x1="75" y1="90" x2="60" y2="60">
+      <animate attributeName="y1" values="90;85;90" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="x1" values="75;80;75" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+    <!-- dumbbells -->
+    <rect class="figure-weight" x="30" y="30" width="12" height="5" rx="2">
+      <animate attributeName="y" values="30;50;3" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="x" values="30;34;30" dur="1.6s" repeatCount="indefinite"/>
+    </rect>
+    <rect class="figure-weight" x="78" y="30" width="12" height="5" rx="2">
+      <animate attributeName="y" values="30;50;3" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="x" values="78;74;78" dur="1.6s" repeatCount="indefinite"/>
+    </rect>
+  </svg>`,
+
+  // 1: Thruster Rotation Press (press + twist)
+  `<svg viewBox="0 0 120 120">
+    <circle class="figure-head" cx="60" cy="20" r="8">
+      <animate attributeName="cx" values="60;55;60;65;60" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <line class="figure-line" x1="60" y1="28" x2="60" y2="62">
+      <animate attributeName="x1" values="60;55;60;65;60" dur="2s" repeatCount="indefinite"/>
+    </line>
+    <!-- left arm pressing + rotating -->
+    <line class="figure-line" x1="38" y1="10" x2="60" y2="42">
+      <animate attributeName="x1" values="38;30;38;45;38" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="y1" values="10;42;10;42;10" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="60;55;60;65;60" dur="2s" repeatCount="indefinite"/>
+    </line>
+    <!-- right arm -->
+    <line class="figure-line" x1="82" y1="10" x2="60" y2="42">
+      <animate attributeName="x1" values="82;75;82;90;82" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="y1" values="10;42;10;42;10" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="60;55;60;65;60" dur="2s" repeatCount="indefinite"/>
+    </line>
+    <!-- legs stable -->
+    <line class="figure-line" x1="45" y1="92" x2="60" y2="62"/>
+    <line class="figure-line" x1="75" y1="92" x2="60" y2="62"/>
+    <!-- dumbbells -->
+    <rect class="figure-weight" x="30" y="6" width="12" height="5" rx="2">
+      <animate attributeName="x" values="30;22;30;37;30" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="6;38;6;38;6" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <rect class="figure-weight" x="78" y="6" width="12" height="5" rx="2">
+      <animate attributeName="x" values="78;70;78;85;78" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="6;38;6;38;6" dur="2s" repeatCount="indefinite"/>
+    </rect>
+  </svg>`,
+
+  // 2: Offset Overhead Lunge (lunge with one arm up)
+  `<svg viewBox="0 0 120 120">
+    <circle class="figure-head" cx="60" cy="16" r="8">
+      <animate attributeName="cy" values="16;28;16" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <!-- torso -->
+    <line class="figure-line" x1="60" y1="24" x2="60" y2="58">
+      <animate attributeName="y1" values="24;36;24" dur="1.8s" repeatCount="indefinite"/>
+    </line>
+    <!-- left arm up (holding weight overhead) -->
+    <line class="figure-line" x1="48" y1="6" x2="60" y2="38">
+      <animate attributeName="y2" values="38;48;38" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="y1" values="6;18;6" dur="1.8s" repeatCount="indefinite"/>
+    </line>
+    <!-- right arm down -->
+    <line class="figure-line" x1="78" y1="52" x2="60" y2="38">
+      <animate attributeName="y2" values="38;48;38" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="y1" values="52;60;52" dur="1.8s" repeatCount="indefinite"/>
+    </line>
+    <!-- front leg (lunging) -->
+    <line class="figure-line" x1="42" y1="92" x2="52" y2="72">
+      <animate attributeName="x2" values="52;48;52" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="72;68;72" dur="1.8s" repeatCount="indefinite"/>
+    </line>
+    <line class="figure-line" x1="52" y1="72" x2="60" y2="58">
+      <animate attributeName="x1" values="52;48;52" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="y1" values="72;68;72" dur="1.8s" repeatCount="indefinite"/>
+    </line>
+    <!-- back leg -->
+    <line class="figure-line" x1="82" y1="92" x2="70" y2="72">
+      <animate attributeName="y2" values="72;80;72" dur="1.8s" repeatCount="indefinite"/>
+    </line>
+    <line class="figure-line" x1="70" y1="72" x2="60" y2="58">
+      <animate attributeName="y1" values="72;80;72" dur="1.8s" repeatCount="indefinite"/>
+    </line>
+    <!-- overhead dumbbell -->
+    <rect class="figure-weight" x="40" y="2" width="14" height="5" rx="2">
+      <animate attributeName="y" values="2;14;2" dur="1.8s" repeatCount="indefinite"/>
+    </rect>
+    <!-- side dumbbell -->
+    <rect class="figure-weight" x="74" y="48" width="10" height="5" rx="2">
+      <animate attributeName="y" values="48;56;48" dur="1.8s" repeatCount="indefinite"/>
+    </rect>
+  </svg>`,
+
+  // 3: DB Curls
+  `<svg viewBox="0 0 120 120">
+    <circle class="figure-head" cx="60" cy="18" r="8"/>
+    <line class="figure-line" x1="60" y1="26" x2="60" y2="62"/>
+    <!-- left upper arm -->
+    <line class="figure-line" x1="48" y1="42" x2="60" y2="38"/>
+    <!-- left forearm curling -->
+    <line class="figure-line" x1="38" y1="50" x2="48" y2="42">
+      <animate attributeName="x1" values="38;42;38" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="y1" values="50;30;50" dur="1.4s" repeatCount="indefinite"/>
+    </line>
+    <!-- right upper arm -->
+    <line class="figure-line" x1="72" y1="42" x2="60" y2="38"/>
+    <!-- right forearm curling -->
+    <line class="figure-line" x1="82" y1="50" x2="72" y2="42">
+      <animate attributeName="x1" values="82;78;82" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="y1" values="50;30;50" dur="1.4s" repeatCount="indefinite"/>
+    </line>
+    <!-- legs -->
+    <line class="figure-line" x1="48" y1="92" x2="60" y2="62"/>
+    <line class="figure-line" x1="72" y1="92" x2="60" y2="62"/>
+    <!-- left dumbbell -->
+    <rect class="figure-weight" x="30" y="46" width="12" height="5" rx="2">
+      <animate attributeName="x" values="30;34;30" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="46;26;46" dur="1.4s" repeatCount="indefinite"/>
+    </rect>
+    <!-- right dumbbell -->
+    <rect class="figure-weight" x="78" y="46" width="12" height="5" rx="2">
+      <animate attributeName="x" values="78;74;78" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="46;26;46" dur="1.4s" repeatCount="indefinite"/>
+    </rect>
+  </svg>`,
+
+  // 4: Pike Push-ups
+  `<svg viewBox="0 0 120 120">
+    <circle class="figure-head" cx="38" cy="42" r="8">
+      <animate attributeName="cy" values="42;56;42" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="38;42;38" dur="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <!-- torso (angled - pike position) -->
+    <line class="figure-line" x1="42" y1="48" x2="65" y2="38">
+      <animate attributeName="y1" values="48;60;48" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="x1" values="42;46;42" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+    <!-- left arm (pushing) -->
+    <line class="figure-line" x1="30" y1="80" x2="40" y2="52">
+      <animate attributeName="x2" values="40;44;40" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="52;64;52" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+    <!-- right arm -->
+    <line class="figure-line" x1="48" y1="80" x2="44" y2="52">
+      <animate attributeName="x2" values="44;48;44" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="52;64;52" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+    <!-- hips up (pike) -->
+    <line class="figure-line" x1="65" y1="38" x2="72" y2="30">
+      <animate attributeName="y2" values="30;34;30" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+    <!-- left leg -->
+    <line class="figure-line" x1="80" y1="80" x2="72" y2="30">
+      <animate attributeName="y2" values="30;34;30" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+    <!-- right leg -->
+    <line class="figure-line" x1="90" y1="80" x2="72" y2="30">
+      <animate attributeName="y2" values="30;34;30" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+    <!-- ground line -->
+    <line class="figure-line" x1="20" y1="82" x2="100" y2="82" style="stroke:var(--text-muted);stroke-width:1;stroke-dasharray:4,4"/>
+  </svg>`
+];
+
+function showExerciseDemo(idx) {
+  exerciseDemo.innerHTML = EXERCISE_SVGS[idx] || '';
+  exerciseDemo.classList.add('visible');
+}
+
+function hideExerciseDemo() {
+  exerciseDemo.classList.remove('visible');
+}
+
+// Keep screen awake
+let wakeLock = null;
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch(e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && phase !== 'idle') requestWakeLock();
+});
+</script>
+</body>
+</html>
