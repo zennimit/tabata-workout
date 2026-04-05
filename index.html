@@ -88,36 +88,48 @@ body{display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
 
 .timer-center{text-align:center;position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
 
-.timer-ring-wrap{position:relative;width:220px;height:220px;margin:0 auto}
-.timer-ring{width:100%;height:100%;transform:rotate(-90deg)}
-.ring-bg{fill:none;stroke:var(--surface2);stroke-width:6}
-.ring-progress{fill:none;stroke-width:6;stroke-linecap:round;
+.timer-ring-wrap{position:relative;width:280px;height:280px;margin:0 auto}
+.timer-ring{width:100%;height:100%;transform:rotate(-90deg);position:absolute;inset:0;z-index:2}
+.ring-bg{fill:none;stroke:var(--surface2);stroke-width:5}
+.ring-progress{fill:none;stroke-width:5;stroke-linecap:round;
   transition:stroke .4s,stroke-dashoffset .15s linear;filter:url(#glow)}
 .ring-progress.work{stroke:var(--work)}
 .ring-progress.rest{stroke:var(--rest)}
 .ring-progress.prep{stroke:var(--accent)}
 
-.timer-digits{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'JetBrains Mono',monospace;font-size:80px;font-weight:700;letter-spacing:-2px;
-  transition:color .4s}
-.timer-digits.work{color:var(--work)}
-.timer-digits.rest{color:var(--rest)}
-.timer-digits.prep{color:var(--accent)}
-.timer-digits.pulse{animation:digit-pulse .3s ease-out}
-@keyframes digit-pulse{0%{transform:scale(1.15)}100%{transform:scale(1)}}
-
-.exercise-display{margin-top:12px;text-align:center}
-.current-exercise{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;line-height:1.2;
-  min-height:36px;transition:opacity .2s}
-.next-exercise{font-size:12px;color:var(--text-dim);margin-top:8px;font-weight:300;letter-spacing:1px;min-height:18px}
-.next-exercise strong{color:var(--text-dim);font-weight:600}
-
-/* Exercise animation demo */
-.exercise-demo{width:140px;height:140px;margin:0 auto 4px;position:relative;opacity:0;transition:opacity .4s;
-  border-radius:14px;overflow:hidden;border:2px solid rgba(255,255,255,.08)}
+/* GIF inside the ring — square with rounded corners */
+.exercise-demo{position:absolute;z-index:3;overflow:hidden;
+  opacity:0;transition:opacity .4s;background:var(--surface);
+  width:178px;height:178px;top:50%;left:50%;transform:translate(-50%,-50%);
+  border-radius:18px;box-shadow:0 0 20px rgba(0,0,0,.5)}
 .exercise-demo.visible{opacity:1}
 .exercise-demo img{width:100%;height:100%;object-fit:cover;display:block}
 .phase-rest .exercise-demo{opacity:0!important}
+
+/* Timer number shown when no GIF (rest/prep) */
+.timer-digits{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:80px;font-weight:700;letter-spacing:-2px;
+  transition:color .4s,opacity .3s;z-index:1}
+.timer-digits.work{color:var(--work)}
+.timer-digits.rest{color:var(--rest)}
+.timer-digits.prep{color:var(--accent)}
+.timer-digits.hidden-digits{opacity:0}
+.timer-digits.pulse{animation:digit-pulse .3s ease-out}
+@keyframes digit-pulse{0%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+/* Small timer below ring when GIF is showing */
+.timer-small{font-family:'JetBrains Mono',monospace;font-size:42px;font-weight:700;
+  margin-top:8px;transition:color .4s,opacity .3s;opacity:0;min-height:50px}
+.timer-small.visible{opacity:1}
+.timer-small.work{color:var(--work)}
+.timer-small.rest{color:var(--rest)}
+.timer-small.prep{color:var(--accent)}
+
+.exercise-display{margin-top:4px;text-align:center}
+.current-exercise{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;line-height:1.2;
+  min-height:36px;transition:opacity .2s}
+.next-exercise{font-size:12px;color:var(--text-dim);margin-top:6px;font-weight:300;letter-spacing:1px;min-height:18px}
+.next-exercise strong{color:var(--text-dim);font-weight:600}
 
 .timer-bottom{width:100%;display:flex;flex-direction:column;gap:16px;align-items:center}
 
@@ -212,19 +224,20 @@ body{display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
 
   <div class="timer-center">
     <div class="timer-ring-wrap">
-      <svg class="timer-ring" viewBox="0 0 260 260">
+      <svg class="timer-ring" viewBox="0 0 280 280">
         <defs>
           <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/>
             <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
         </defs>
-        <circle class="ring-bg" cx="130" cy="130" r="120"/>
-        <circle class="ring-progress prep" id="ringProgress" cx="130" cy="130" r="120"
-          stroke-dasharray="754" stroke-dashoffset="0"/>
+        <circle class="ring-bg" cx="140" cy="140" r="132"/>
+        <circle class="ring-progress prep" id="ringProgress" cx="140" cy="140" r="132"
+          stroke-dasharray="829" stroke-dashoffset="0"/>
       </svg>
+      <div class="exercise-demo" id="exerciseDemo"></div>
       <div class="timer-digits prep" id="timerDigits">10</div>
     </div>
-    <div class="exercise-demo" id="exerciseDemo"></div>
+    <div class="timer-small prep" id="timerSmall"></div>
     <div class="exercise-display">
       <div class="current-exercise" id="currentExercise">GET READY</div>
       <div class="next-exercise" id="nextExercise"></div>
@@ -285,7 +298,7 @@ const EXERCISES = [
 const WORK_TIME = 20;
 const REST_TIME = 10;
 const TOTAL_ROUNDS = 5;
-const CIRCUMFERENCE = 2 * Math.PI * 120; // ~754
+const CIRCUMFERENCE = 2 * Math.PI * 132; // ~829
 
 let currentRound = 1;
 let currentExIdx = 0;
@@ -377,6 +390,7 @@ function setPhaseUI(p) {
   timerScreen.className = 'screen timer-screen active phase-' + p;
   ringProgress.className = 'ring-progress ' + p;
   timerDigits.className = 'timer-digits ' + p;
+  timerSmall.className = 'timer-small ' + p;
 
   if (p === 'work') {
     phaseBadge.className = 'phase-badge work';
@@ -514,6 +528,7 @@ function startTimer(total) {
     }
 
     timerDigits.textContent = timeLeft;
+    if (timerSmall.classList.contains('visible')) timerSmall.textContent = timeLeft;
     setRing(timeLeft, total);
 
     if (timeLeft <= 0) {
@@ -577,15 +592,21 @@ function resetWorkout() {
 
 // ── EXERCISE DEMO (video GIF clips) ──
 const exerciseDemo = $timer('exerciseDemo');
+const timerSmall = $timer('timerSmall');
 const EXERCISE_GIFS = ['ex1.gif','ex2.gif','ex3.gif','ex4.gif','ex5.gif'];
 
 function showExerciseDemo(idx) {
   exerciseDemo.innerHTML = `<img src="${EXERCISE_GIFS[idx]}" alt="${EXERCISES[idx].name}">`;
   exerciseDemo.classList.add('visible');
+  timerDigits.classList.add('hidden-digits');
+  timerSmall.classList.add('visible');
+  timerSmall.textContent = timeLeft;
 }
 
 function hideExerciseDemo() {
   exerciseDemo.classList.remove('visible');
+  timerDigits.classList.remove('hidden-digits');
+  timerSmall.classList.remove('visible');
 }
 
 // Keep screen awake
