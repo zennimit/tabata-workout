@@ -391,11 +391,14 @@ function formatTime(s) {
   return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
+let gifVisible = false;
+
 function setPhaseUI(p) {
   timerScreen.className = 'screen timer-screen active phase-' + p;
   ringProgress.className = 'ring-progress ' + p;
-  timerDigits.className = 'timer-digits ' + p;
-  timerSmall.className = 'timer-small ' + p;
+  // Preserve hidden-digits if GIF is showing
+  timerDigits.className = 'timer-digits ' + p + (gifVisible ? ' hidden-digits' : '');
+  timerSmall.className = 'timer-small ' + p + (gifVisible ? ' visible' : '');
 
   if (p === 'work') {
     phaseBadge.className = 'phase-badge work';
@@ -498,24 +501,23 @@ function startWork() {
 function startRest() {
   phase = 'rest';
   timeLeft = REST_TIME;
-  setPhaseUI('rest');
-  currentExercise.textContent = 'REST';
-  // show what's next + preview GIF
+  // Determine next exercise for preview
   const nextIdx = currentExIdx + 1;
   let previewIdx = -1;
   if (nextIdx < EXERCISES.length) {
-    nextExercise.innerHTML = `Up next: <strong>${EXERCISES[nextIdx].name}</strong>`;
     previewIdx = nextIdx;
   } else if (currentRound < TOTAL_ROUNDS) {
-    nextExercise.innerHTML = `Next round: <strong>${EXERCISES[0].name}</strong>`;
     previewIdx = 0;
-  } else {
-    nextExercise.textContent = '';
   }
-  // Show preview of next exercise
+  // Set gifVisible BEFORE setPhaseUI so it knows whether to hide digits
+  gifVisible = previewIdx >= 0;
+  setPhaseUI('rest');
+  currentExercise.textContent = 'REST';
   if (previewIdx >= 0) {
+    nextExercise.innerHTML = `Up next: <strong>${EXERCISES[previewIdx].name}</strong>`;
     showRestPreview(previewIdx);
   } else {
+    nextExercise.textContent = '';
     hideExerciseDemo();
   }
   timerDigits.textContent = timeLeft;
@@ -617,6 +619,7 @@ const timerSmall = $timer('timerSmall');
 const EXERCISE_GIFS = ['ex1.gif','ex2.gif','ex3.gif','ex4.gif','ex5.gif'];
 
 function showExerciseDemo(idx) {
+  gifVisible = true;
   exerciseDemo.innerHTML = `<img src="${EXERCISE_GIFS[idx]}" alt="${EXERCISES[idx].name}"><div class="gif-progress" id="gifProgress" style="width:100%"></div>`;
   exerciseDemo.classList.add('visible','phase-work-border');
   exerciseDemo.classList.remove('phase-rest-border','rest-preview');
@@ -626,16 +629,17 @@ function showExerciseDemo(idx) {
 }
 
 function hideExerciseDemo() {
+  gifVisible = false;
   exerciseDemo.classList.remove('visible','phase-work-border','phase-rest-border','rest-preview');
   timerDigits.classList.remove('hidden-digits');
   timerSmall.classList.remove('visible');
 }
 
 function showRestPreview(idx) {
+  gifVisible = true;
   exerciseDemo.innerHTML = `<img src="${EXERCISE_GIFS[idx]}" alt="${EXERCISES[idx].name}">`;
   exerciseDemo.classList.remove('phase-work-border');
   exerciseDemo.classList.add('visible','rest-preview','phase-rest-border');
-  // Hide big digits inside ring, show small timer below
   timerDigits.classList.add('hidden-digits');
   timerSmall.classList.add('visible');
   timerSmall.textContent = timeLeft;
