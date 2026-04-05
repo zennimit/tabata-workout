@@ -88,25 +88,26 @@ body{display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
 
 .timer-center{text-align:center;position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
 
-.timer-ring-wrap{position:relative;width:280px;height:280px;margin:0 auto}
-.timer-ring{width:100%;height:100%;transform:rotate(-90deg);position:absolute;inset:0;z-index:2}
-.ring-bg{fill:none;stroke:var(--surface2);stroke-width:5}
-.ring-progress{fill:none;stroke-width:5;stroke-linecap:round;
-  transition:stroke .4s,stroke-dashoffset .15s linear;filter:url(#glow)}
-.ring-progress.work{stroke:var(--work)}
-.ring-progress.rest{stroke:var(--rest)}
-.ring-progress.prep{stroke:var(--accent)}
+.timer-ring-wrap{position:relative;width:200px;height:320px;margin:0 auto}
+.timer-ring{display:none}
+.ring-bg,.ring-progress{display:none}
 
-/* GIF inside the ring — square with rounded corners */
-.exercise-demo{position:absolute;z-index:3;overflow:hidden;
+/* GIF as tall rectangle */
+.exercise-demo{width:200px;height:320px;overflow:hidden;
   opacity:0;transition:opacity .4s;background:var(--surface);
-  width:178px;height:178px;top:50%;left:50%;transform:translate(-50%,-50%);
-  border-radius:18px;box-shadow:0 0 20px rgba(0,0,0,.5)}
+  border-radius:18px;box-shadow:0 0 30px rgba(0,0,0,.5);
+  border:3px solid var(--surface2);position:relative}
 .exercise-demo.visible{opacity:1}
+.exercise-demo.visible.phase-work-border{border-color:var(--work)}
+.exercise-demo.visible.phase-rest-border{border-color:var(--rest)}
 .exercise-demo img{width:100%;height:100%;object-fit:cover;display:block}
 .phase-rest .exercise-demo{opacity:0!important}
 
-/* Timer number shown when no GIF (rest/prep) */
+/* Progress bar on top of GIF */
+.gif-progress{position:absolute;bottom:0;left:0;height:4px;border-radius:0 2px 2px 0;
+  background:var(--work);transition:width .15s linear,background .4s;z-index:4}
+
+/* Timer number — shown large when no GIF, hidden when GIF visible */
 .timer-digits{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-family:'JetBrains Mono',monospace;font-size:80px;font-weight:700;letter-spacing:-2px;
   transition:color .4s,opacity .3s;z-index:1}
@@ -117,9 +118,9 @@ body{display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
 .timer-digits.pulse{animation:digit-pulse .3s ease-out}
 @keyframes digit-pulse{0%{transform:scale(1.15)}100%{transform:scale(1)}}
 
-/* Small timer below ring when GIF is showing */
+/* Small timer below GIF when showing */
 .timer-small{font-family:'JetBrains Mono',monospace;font-size:42px;font-weight:700;
-  margin-top:8px;transition:color .4s,opacity .3s;opacity:0;min-height:50px}
+  margin-top:10px;transition:color .4s,opacity .3s;opacity:0;min-height:50px}
 .timer-small.visible{opacity:1}
 .timer-small.work{color:var(--work)}
 .timer-small.rest{color:var(--rest)}
@@ -532,6 +533,7 @@ function startTimer(total) {
     timerDigits.textContent = timeLeft;
     if (timerSmall.classList.contains('visible')) timerSmall.textContent = timeLeft;
     setRing(timeLeft, total);
+    updateGifProgress();
 
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
@@ -605,17 +607,27 @@ const timerSmall = $timer('timerSmall');
 const EXERCISE_GIFS = ['ex1.gif','ex2.gif','ex3.gif','ex4.gif','ex5.gif'];
 
 function showExerciseDemo(idx) {
-  exerciseDemo.innerHTML = `<img src="${EXERCISE_GIFS[idx]}" alt="${EXERCISES[idx].name}">`;
-  exerciseDemo.classList.add('visible');
+  exerciseDemo.innerHTML = `<img src="${EXERCISE_GIFS[idx]}" alt="${EXERCISES[idx].name}"><div class="gif-progress" id="gifProgress" style="width:100%"></div>`;
+  exerciseDemo.classList.add('visible','phase-work-border');
+  exerciseDemo.classList.remove('phase-rest-border');
   timerDigits.classList.add('hidden-digits');
   timerSmall.classList.add('visible');
   timerSmall.textContent = timeLeft;
 }
 
 function hideExerciseDemo() {
-  exerciseDemo.classList.remove('visible');
+  exerciseDemo.classList.remove('visible','phase-work-border','phase-rest-border');
   timerDigits.classList.remove('hidden-digits');
   timerSmall.classList.remove('visible');
+}
+
+function updateGifProgress() {
+  const bar = document.getElementById('gifProgress');
+  if (!bar) return;
+  const total = phase === 'work' ? WORK_TIME : REST_TIME;
+  const pct = (timeLeft / total) * 100;
+  bar.style.width = pct + '%';
+  bar.style.background = phase === 'work' ? 'var(--work)' : 'var(--rest)';
 }
 
 // Keep screen awake
