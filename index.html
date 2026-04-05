@@ -102,7 +102,8 @@ body{display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
 .exercise-demo.visible.phase-rest-border{border-color:var(--rest)}
 .exercise-demo img{width:100%;height:100%;object-fit:cover;display:block}
 /* During rest, show smaller preview of next exercise */
-.exercise-demo.rest-preview{opacity:0.7!important;width:140px;height:220px;border-color:var(--rest)}
+.exercise-demo.rest-preview{opacity:0.7!important;width:140px;height:220px;border-color:var(--rest);
+  left:50%;transform:translateX(-50%)}
 
 /* Progress bar on top of GIF */
 .gif-progress{position:absolute;bottom:0;left:0;height:4px;border-radius:0 2px 2px 0;
