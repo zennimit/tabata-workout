@@ -101,7 +101,9 @@ body{display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
 .exercise-demo.visible.phase-work-border{border-color:var(--work)}
 .exercise-demo.visible.phase-rest-border{border-color:var(--rest)}
 .exercise-demo img{width:100%;height:100%;object-fit:cover;display:block}
-.phase-rest .exercise-demo{opacity:0!important}
+/* During rest, show smaller preview */
+.exercise-demo.rest-preview{opacity:1!important;width:140px;height:220px;border-color:var(--rest);
+  filter:brightness(0.6)}
 
 /* Progress bar on top of GIF */
 .gif-progress{position:absolute;bottom:0;left:0;height:4px;border-radius:0 2px 2px 0;
@@ -497,16 +499,24 @@ function startRest() {
   phase = 'rest';
   timeLeft = REST_TIME;
   setPhaseUI('rest');
-  hideExerciseDemo();
   currentExercise.textContent = 'REST';
-  // show what's next
+  // show what's next + preview GIF
   const nextIdx = currentExIdx + 1;
+  let previewIdx = -1;
   if (nextIdx < EXERCISES.length) {
-    nextExercise.innerHTML = `Next: <strong>${EXERCISES[nextIdx].name}</strong>`;
+    nextExercise.innerHTML = `Up next: <strong>${EXERCISES[nextIdx].name}</strong>`;
+    previewIdx = nextIdx;
   } else if (currentRound < TOTAL_ROUNDS) {
     nextExercise.innerHTML = `Next round: <strong>${EXERCISES[0].name}</strong>`;
+    previewIdx = 0;
   } else {
     nextExercise.textContent = '';
+  }
+  // Show preview of next exercise
+  if (previewIdx >= 0) {
+    showRestPreview(previewIdx);
+  } else {
+    hideExerciseDemo();
   }
   timerDigits.textContent = timeLeft;
   setRing(timeLeft, REST_TIME);
@@ -609,14 +619,22 @@ const EXERCISE_GIFS = ['ex1.gif','ex2.gif','ex3.gif','ex4.gif','ex5.gif'];
 function showExerciseDemo(idx) {
   exerciseDemo.innerHTML = `<img src="${EXERCISE_GIFS[idx]}" alt="${EXERCISES[idx].name}"><div class="gif-progress" id="gifProgress" style="width:100%"></div>`;
   exerciseDemo.classList.add('visible','phase-work-border');
-  exerciseDemo.classList.remove('phase-rest-border');
+  exerciseDemo.classList.remove('phase-rest-border','rest-preview');
   timerDigits.classList.add('hidden-digits');
   timerSmall.classList.add('visible');
   timerSmall.textContent = timeLeft;
 }
 
 function hideExerciseDemo() {
-  exerciseDemo.classList.remove('visible','phase-work-border','phase-rest-border');
+  exerciseDemo.classList.remove('visible','phase-work-border','phase-rest-border','rest-preview');
+  timerDigits.classList.remove('hidden-digits');
+  timerSmall.classList.remove('visible');
+}
+
+function showRestPreview(idx) {
+  exerciseDemo.innerHTML = `<img src="${EXERCISE_GIFS[idx]}" alt="${EXERCISES[idx].name}">`;
+  exerciseDemo.classList.remove('phase-work-border');
+  exerciseDemo.classList.add('visible','rest-preview','phase-rest-border');
   timerDigits.classList.remove('hidden-digits');
   timerSmall.classList.remove('visible');
 }
