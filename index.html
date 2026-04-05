@@ -146,6 +146,7 @@ body{display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
 .btn-ctrl:active{transform:scale(.95)}
 .btn-pause{background:var(--surface2);color:var(--text);border:1px solid #ffffff10}
 .btn-reset{background:transparent;color:var(--text-dim);border:1px solid #ffffff08}
+.btn-skip{background:transparent;color:var(--text-dim);border:1px solid #ffffff08;flex:0.6}
 
 /* ── DONE SCREEN ── */
 .done-screen{align-items:center;justify-content:center;gap:24px;
@@ -250,6 +251,7 @@ body{display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
     <div class="controls">
       <button class="btn-ctrl btn-pause" id="btnPause" onclick="togglePause()">PAUSE</button>
       <button class="btn-ctrl btn-reset" onclick="resetWorkout()">RESET</button>
+      <button class="btn-ctrl btn-skip" onclick="skipPhase()">SKIP &raquo;</button>
     </div>
   </div>
 </div>
@@ -577,6 +579,13 @@ function togglePause() {
   btnPause.textContent = isPaused ? 'RESUME' : 'PAUSE';
   pausedOverlay.classList.toggle('active', isPaused);
   haptic(30);
+}
+
+function skipPhase() {
+  if (phase === 'idle' || phase === 'done') return;
+  clearInterval(timerInterval);
+  haptic(30);
+  onPhaseEnd();
 }
 
 function resetWorkout() {
